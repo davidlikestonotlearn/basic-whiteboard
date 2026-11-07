@@ -7,6 +7,16 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build"
   },
-  "dependencies": { "react": "^19.2.0", "react-dom": "^19.2.0" },
-  "devDependencies": { "@types/react": "^19.2.0", "@types/react-dom": "^19.2.0", "typescript": "^5.9.0", "vite": "^7.2.0" }
+  "dependencies": {
+    "konva": "^10.9.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-konva": "^19.3.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.2.0"
+  }
 }

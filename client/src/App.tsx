@@ -1,6 +1,6 @@
 import { useState } from "react";
+import Whiteboard from "./Whiteboard";
 
-// This first checkpoint only switches tabs. Drawing comes next.
 type Tab = "Drawing" | "Shapes" | "Uploads";
 const tabs: Tab[] = ["Drawing", "Shapes", "Uploads"];
 
@@ -54,7 +54,7 @@ export default function App() {
           <button disabled>Redo</button>
         </div>
       </aside>
-      <section className="whiteboard" aria-label="Whiteboard" />
+      <Whiteboard />
     </main>
   );
 }
