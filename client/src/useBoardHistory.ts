@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import type { Stroke } from "./drawing";
 import type { Shape } from "./shapes";
 
@@ -21,6 +21,10 @@ export default function useBoardHistory() {
     current: emptyBoard,
     future: [],
   });
+
+  const restoreBoard = useCallback((savedBoard: Board) => {
+    setHistory({ past: [], current: savedBoard, future: [] });
+  }, []);
 
   function editBoard(edit: (board: Board) => Board) {
     setHistory(({ past, current, future }) => {
@@ -64,6 +68,7 @@ export default function useBoardHistory() {
 
   return {
     board: history.current,
+    restoreBoard,
     canUndo: history.past.length > 0,
     canRedo: history.future.length > 0,
     editBoard,

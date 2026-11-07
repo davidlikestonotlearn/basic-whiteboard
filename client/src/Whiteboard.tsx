@@ -43,6 +43,7 @@ function DrawingMark({ stroke }: { stroke: Stroke }) {
 }
 
 type WhiteboardProps = {
+  enabled: boolean;
   settings: DrawingSettings;
   editingShapes: boolean;
   shapes: Shape[];
@@ -54,6 +55,7 @@ type WhiteboardProps = {
 };
 
 export default function Whiteboard({
+  enabled,
   settings,
   editingShapes,
   shapes,
@@ -130,6 +132,7 @@ export default function Whiteboard({
     <section
       ref={boardRef}
       className="whiteboard"
+      inert={!enabled}
       aria-label="Whiteboard"
       data-tool={editingShapes ? "move" : settings.tool}
       onPointerDown={startDrawing}

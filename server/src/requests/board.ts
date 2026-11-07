@@ -1,10 +1,8 @@
 import { Router } from "express";
+import { readBoard, writeBoard } from "../queries/board.js";
 
 const router = Router();
 const shapeKinds = ["Rectangle", "Square", "Circle", "Triangle", "Hexagon", "Star"];
-
-// Step 6 stores one board in memory. Step 7 will replace this with PostgreSQL.
-let savedBoard: { shapes: unknown[]; strokes: unknown[] } = { shapes: [], strokes: [] };
 
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -37,11 +35,11 @@ function isStroke(value: unknown) {
     isNumber(value.thickness) && value.thickness >= 1 && value.thickness <= 32;
 }
 
-router.get("/", (_request, response) => {
-  response.set("Cache-Control", "no-store").json(savedBoard);
+router.get("/", async (_request, response) => {
+  response.set("Cache-Control", "no-store").json(await readBoard());
 });
 
-router.put("/", (request, response) => {
+router.put("/", async (request, response) => {
   const board: unknown = request.body;
   if (!isObject(board) ||
       !Array.isArray(board.shapes) || !board.shapes.every(isShape) ||
@@ -50,7 +48,7 @@ router.put("/", (request, response) => {
     return;
   }
 
-  savedBoard = { shapes: board.shapes, strokes: board.strokes };
+  await writeBoard({ shapes: board.shapes, strokes: board.strokes });
   response.sendStatus(204);
 });
 
