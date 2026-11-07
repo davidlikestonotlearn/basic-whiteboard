@@ -1,8 +1,8 @@
 # Basic Whiteboard
 
-A learning project using React and TypeScript, followed by Konva, Express, and PostgreSQL.
+A local whiteboard built with React, TypeScript, Konva, Express, and PostgreSQL. Docker Compose runs the database.
 
-## Checkpoint 8: reusable image uploads
+## Using the whiteboard
 
 Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Open Shapes and click an outlined shape to add it. Select or drag a shape on the board, resize it with the corner handles, or use Delete selected shape in the sidebar. The Drawing tab also has a Move tool for selecting and editing shapes. Undo and Redo step through drawing and shape edits. Reset clears the board and can be undone. The board loads when the app opens and saves automatically after each edit, including Undo, Redo, and Reset. Wait for Saved before closing the tab. PostgreSQL keeps the latest board across restarts. Undo and redo history starts fresh when you reload.
 
@@ -19,19 +19,41 @@ npm.cmd --prefix client install
 npm.cmd --prefix server install
 ```
 
-With PostgreSQL running locally, create a database named `basic_whiteboard`. You can run the following in a PostgreSQL query tool while connected to the default `postgres` database:
+### Start PostgreSQL with Docker Compose
 
-```sql
-CREATE DATABASE basic_whiteboard;
+Start Docker Desktop, or use a running Docker Engine with the Compose plugin. From the project folder, copy the example settings on a fresh checkout:
+
+```powershell
+Copy-Item .env.example .env
+Copy-Item server/.env.example server/.env
 ```
 
-Copy `server/.env.example` to `server/.env` and update `DATABASE_URL` with your PostgreSQL username, password, and port. URL-encode special characters in the password. Run `npm.cmd run db:setup` to create or update the board and uploads tables. This setup command can be run again safely.
+If either `.env` already exists, edit it directly to keep your existing settings. Set `POSTGRES_PASSWORD` in the root `.env` and update `DATABASE_URL` in `server/.env` to use the same password. Use port `5433` for Compose:
+
+```dotenv
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@127.0.0.1:5433/basic_whiteboard
+```
+
+Replace `YOUR_PASSWORD` with your password. URL-encode special characters in the password in `DATABASE_URL`. Then run:
+
+```powershell
+docker compose up --wait
+npm.cmd run db:setup
+```
+
+Compose creates the database and waits for PostgreSQL to accept connections. The setup command creates the board and uploads tables and can be rerun safely. Compose exposes PostgreSQL only on localhost and keeps its data in the named `postgres_data` volume. Run `docker compose stop` to stop the database and `docker compose up --wait` to start it again with the same data.
+
+### Use an existing PostgreSQL installation
+
+If you already use a local PostgreSQL database, you can keep using it. Create `basic_whiteboard` if needed, point `server/.env` at that database and port, and run `npm.cmd run db:setup`. The Compose database starts separately. To move existing board and upload records into it, restore a database backup and keep the corresponding files in `server/uploads/`.
+
+### Start the app
 
 Start Express in one terminal with `npm.cmd run dev:server` and Vite in another with `npm.cmd run dev`. Open the local URL printed by Vite. On macOS or Linux, use `npm` in place of `npm.cmd`.
 
 Run `npm.cmd run build` to check TypeScript in both projects and build the frontend.
 
-The frontend uses two endpoints. Vite forwards requests under `/api` to Express at `127.0.0.1:3001`.
+Vite forwards requests under `/api` to Express at `127.0.0.1:3001`.
 
 | Request | Result |
 | --- | --- |
@@ -65,7 +87,3 @@ The frontend uses two endpoints. Vite forwards requests under `/api` to Express 
 ## Font
 
 The stylesheet requests Canva Sans. A licensed webfont file has not been supplied, so a sans-serif fallback is used for now.
-
-## Planned checkpoints
-
-- Docker Compose
