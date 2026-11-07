@@ -46,6 +46,8 @@ type WhiteboardProps = {
   settings: DrawingSettings;
   editingShapes: boolean;
   shapes: Shape[];
+  strokes: Stroke[];
+  onAddStroke: (stroke: Stroke) => void;
   selectedShapeId: string | null;
   onSelectShape: (id: string | null) => void;
   onChangeShape: (shape: Shape) => void;
@@ -55,6 +57,8 @@ export default function Whiteboard({
   settings,
   editingShapes,
   shapes,
+  strokes,
+  onAddStroke,
   selectedShapeId,
   onSelectShape,
   onChangeShape,
@@ -63,7 +67,6 @@ export default function Whiteboard({
   const activePointer = useRef<number | null>(null);
   const draftRef = useRef<Stroke | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [draft, setDraft] = useState<Stroke | null>(null);
 
   useEffect(() => {
@@ -118,7 +121,7 @@ export default function Whiteboard({
     const [startX, startY, endX, endY] = finishedStroke.points;
     const hasLength = finishedStroke.points.length > 2 && (startX !== endX || startY !== endY);
     if (finishedStroke.tool === "pen" || hasLength) {
-      setStrokes((previous) => [...previous, finishedStroke]);
+      onAddStroke(finishedStroke);
     }
     cancelDrawing(event);
   }

@@ -2,9 +2,9 @@
 
 A learning project using React and TypeScript, followed by Konva, Express, and PostgreSQL.
 
-## Checkpoint 4: shapes
+## Checkpoint 5: board history
 
-Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Open Shapes and click an outlined shape to add it. Select or drag a shape on the board, resize it with the corner handles, or use Delete selected shape in the sidebar. The Drawing tab also has a Move tool for selecting and editing shapes. The board resets when you reload.
+Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Open Shapes and click an outlined shape to add it. Select or drag a shape on the board, resize it with the corner handles, or use Delete selected shape in the sidebar. The Drawing tab also has a Move tool for selecting and editing shapes. Undo and Redo step through drawing and shape edits. Reset clears the board and can be undone. The board and its history reset when you reload.
 
 ## Run locally
 
@@ -25,13 +25,14 @@ Run `npm run build` to check TypeScript and produce a production build.
 5. `client/src/DrawingTab.tsx`: changes the drawing settings stored in App.
 6. `client/src/Whiteboard.tsx`: handles pointer events and turns saved points into Konva marks.
 
+7. `client/src/useBoardHistory.ts`: keeps the previous, current, and next board states.
+
 ## Font
 
 The stylesheet requests Canva Sans. A licensed webfont file has not been supplied, so a sans-serif fallback is used for now.
 
 ## Planned checkpoints
 
-- Undo, redo, and reset
 - Express backend
 - PostgreSQL board saving
 - Persistent image uploads

@@ -1,9 +1,10 @@
 import { useState } from "react";
 import DrawingTab from "./DrawingTab";
-import type { DrawingSettings } from "./drawing";
+import type { DrawingSettings, Stroke } from "./drawing";
 import Whiteboard from "./Whiteboard";
 import ShapesTab from "./ShapesTab";
 import type { Shape, ShapeKind } from "./shapes";
+import useBoardHistory from "./useBoardHistory";
 
 type Tab = "Drawing" | "Shapes" | "Uploads";
 const tabs: Tab[] = ["Drawing", "Shapes", "Uploads"];
@@ -17,7 +18,8 @@ export default function App() {
     thickness: 4,
   });
 
-  const [shapes, setShapes] = useState<Shape[]>([]);
+  const { board, canUndo, canRedo, editBoard, undo, redo, reset } = useBoardHistory();
+  const { shapes, strokes } = board;
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
 
   function addShape(kind: ShapeKind) {
@@ -30,18 +32,36 @@ export default function App() {
       scaleX: 0.75,
       scaleY: 0.75,
     };
-    setShapes((previous) => [...previous, shape]);
+    editBoard((current) => ({ ...current, shapes: [...current.shapes, shape] }));
     setSelectedShapeId(shape.id);
   }
 
   function updateShape(updatedShape: Shape) {
-    setShapes((previous) =>
-      previous.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape))
-    );
+    editBoard((current) => {
+      const original = current.shapes.find((shape) => shape.id === updatedShape.id);
+      if (!original) return current;
+      if (
+        original.x === updatedShape.x && original.y === updatedShape.y &&
+        original.scaleX === updatedShape.scaleX && original.scaleY === updatedShape.scaleY
+      ) return current;
+
+      return {
+        ...current,
+        shapes: current.shapes.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape)),
+      };
+    });
+  }
+
+  function addStroke(stroke: Stroke) {
+    editBoard((current) => ({ ...current, strokes: [...current.strokes, stroke] }));
   }
 
   function deleteSelectedShape() {
-    setShapes((previous) => previous.filter((shape) => shape.id !== selectedShapeId));
+    if (!selectedShapeId) return;
+    editBoard((current) => ({
+      ...current,
+      shapes: current.shapes.filter((shape) => shape.id !== selectedShapeId),
+    }));
     setSelectedShapeId(null);
   }
 
@@ -83,15 +103,41 @@ export default function App() {
         </section>
 
         <div className="board-controls" aria-label="Board controls">
-          <button disabled>Reset</button>
-          <button disabled>Undo</button>
-          <button disabled>Redo</button>
+          <button
+            disabled={shapes.length === 0 && strokes.length === 0}
+            onClick={() => {
+              reset();
+              setSelectedShapeId(null);
+            }}
+          >
+            Reset
+          </button>
+          <button
+            disabled={!canUndo}
+            onClick={() => {
+              undo();
+              setSelectedShapeId(null);
+            }}
+          >
+            Undo
+          </button>
+          <button
+            disabled={!canRedo}
+            onClick={() => {
+              redo();
+              setSelectedShapeId(null);
+            }}
+          >
+            Redo
+          </button>
         </div>
       </aside>
       <Whiteboard
         settings={drawingSettings}
         editingShapes={activeTab === "Shapes" || (activeTab === "Drawing" && drawingSettings.tool === "move")}
         shapes={shapes}
+        strokes={strokes}
+        onAddStroke={addStroke}
         selectedShapeId={selectedShapeId}
         onSelectShape={setSelectedShapeId}
         onChangeShape={updateShape}
