@@ -1,4 +1,6 @@
 import { useState } from "react";
+import DrawingTab from "./DrawingTab";
+import type { DrawingSettings } from "./drawing";
 import Whiteboard from "./Whiteboard";
 
 type Tab = "Drawing" | "Shapes" | "Uploads";
@@ -6,6 +8,12 @@ const tabs: Tab[] = ["Drawing", "Shapes", "Uploads"];
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>("Drawing");
+
+  const [drawingSettings, setDrawingSettings] = useState<DrawingSettings>({
+    tool: "pen",
+    color: "#111111",
+    thickness: 4,
+  });
 
   return (
     <main className="app">
@@ -27,11 +35,7 @@ export default function App() {
 
         <section className="tools" id="tool-panel" role="tabpanel" aria-labelledby={`tab-${activeTab}`}>
           {activeTab === "Drawing" && (
-            <>
-              <div className="tool-box">Pen thickness</div>
-              <div className="color-preview">Select color</div>
-              <div className="tool-box">Lines and arrows</div>
-            </>
+            <DrawingTab settings={drawingSettings} onChange={setDrawingSettings} />
           )}
           {activeTab === "Shapes" && (
             <div className="shape-previews" aria-label="Shape previews">
@@ -54,7 +58,7 @@ export default function App() {
           <button disabled>Redo</button>
         </div>
       </aside>
-      <Whiteboard />
+      <Whiteboard settings={drawingSettings} />
     </main>
   );
 }

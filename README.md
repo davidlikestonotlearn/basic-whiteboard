@@ -2,9 +2,9 @@
 
 A learning project using React and TypeScript, followed by Konva, Express, and PostgreSQL.
 
-## Checkpoint 2: Konva canvas
+## Checkpoint 3: drawing tools
 
-Drag the blue circle on the whiteboard to try Konva. Its position is kept in React state and resets when you reload. The sidebar has three working tabs, with drawing tools, uploads, and board controls coming in later checkpoints.
+Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Choose Move to drag the blue practice circle. Drawings and the circle position reset when you reload.
 
 ## Run locally
 
@@ -22,7 +22,8 @@ Run `npm run build` to check TypeScript and produce a production build.
 2. `client/src/main.tsx`: starts React and loads the stylesheet.
 3. `client/src/App.tsx`: uses state to switch sidebar content.
 4. `client/src/styles.css`: controls layout, spacing, and colors.
-5. `client/src/Whiteboard.tsx`: the Konva Stage is the canvas area, the Layer holds the Circle, and onDragEnd saves its x and y coordinates in React state.
+5. `client/src/DrawingTab.tsx`: changes the drawing settings stored in App.
+6. `client/src/Whiteboard.tsx`: handles pointer events and turns saved points into Konva marks.
 
 ## Font
 
@@ -30,7 +31,6 @@ The stylesheet requests Canva Sans. A licensed webfont file has not been supplie
 
 ## Planned checkpoints
 
-- Pen, colors, thickness, lines, and arrows
 - Shape editing and undo/redo/reset
 - Express backend
 - PostgreSQL board saving
