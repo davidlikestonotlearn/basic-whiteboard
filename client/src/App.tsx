@@ -5,6 +5,7 @@ import Whiteboard from "./Whiteboard";
 import ShapesTab from "./ShapesTab";
 import type { Shape, ShapeKind } from "./shapes";
 import useBoardHistory from "./useBoardHistory";
+import { loadBoard, saveBoard } from "./serverRequests/board";
 
 type Tab = "Drawing" | "Shapes" | "Uploads";
 const tabs: Tab[] = ["Drawing", "Shapes", "Uploads"];
@@ -21,6 +22,29 @@ export default function App() {
   const { board, canUndo, canRedo, editBoard, undo, redo, reset } = useBoardHistory();
   const { shapes, strokes } = board;
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+
+  const [boardRequest, setBoardRequest] = useState<"save" | "load" | null>(null);
+  const [boardMessage, setBoardMessage] = useState("");
+
+  async function syncBoard(action: "save" | "load") {
+    setBoardRequest(action);
+    setBoardMessage("");
+    try {
+      if (action === "save") {
+        await saveBoard(board);
+        setBoardMessage("Board snapshot saved.");
+      } else {
+        const savedBoard = await loadBoard();
+        editBoard(() => savedBoard);
+        setSelectedShapeId(null);
+        setBoardMessage("Saved board loaded.");
+      }
+    } catch (error) {
+      setBoardMessage(error instanceof Error ? error.message : "The board request failed.");
+    } finally {
+      setBoardRequest(null);
+    }
+  }
 
   function addShape(kind: ShapeKind) {
     const offset = (shapes.length % 5) * 12;
@@ -101,6 +125,16 @@ export default function App() {
             </>
           )}
         </section>
+
+        <p className="board-status" role="status">{boardMessage}</p>
+        <div className="board-controls board-storage" aria-label="Board storage">
+          <button disabled={boardRequest !== null} onClick={() => void syncBoard("save")}>
+            {boardRequest === "save" ? "Saving..." : "Save"}
+          </button>
+          <button disabled={boardRequest !== null} onClick={() => void syncBoard("load")}>
+            {boardRequest === "load" ? "Loading..." : "Load"}
+          </button>
+        </div>
 
         <div className="board-controls" aria-label="Board controls">
           <button

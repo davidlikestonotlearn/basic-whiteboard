@@ -48,6 +48,9 @@ button:focus-visible { outline: 3px solid #315b7b; outline-offset: 3px; }
 .stage-note { font-size: 14px; line-height: 1.5; }
 .board-controls { display: flex; justify-content: flex-end; gap: 6px; padding: 16px; }
 .board-controls button { padding: 10px; background: #d9d9d9; border: 1px solid #111; text-transform: uppercase; }
+.board-storage { padding-top: 0; padding-bottom: 0; }
+.board-status { margin: 0 16px 8px; font-size: 14px; }
+.board-status:empty { display: none; }
 button:disabled { cursor: not-allowed; }
 .whiteboard { flex: 1; min-width: 0; background: white; touch-action: none; user-select: none; cursor: crosshair; }
 .whiteboard[data-tool="move"] { cursor: grab; }

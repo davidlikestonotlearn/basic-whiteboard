@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Stroke } from "./drawing";
 import type { Shape } from "./shapes";
 
-type Board = {
+export type Board = {
   strokes: Stroke[];
   shapes: Shape[];
 };
