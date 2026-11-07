@@ -4,6 +4,8 @@ import type { DrawingSettings, Stroke } from "./drawing";
 import Whiteboard from "./Whiteboard";
 import ShapesTab from "./ShapesTab";
 import type { Shape, ShapeKind } from "./shapes";
+import UploadsTab from "./UploadsTab";
+import type { PlacedImage, Upload } from "./uploads";
 import useBoardHistory from "./useBoardHistory";
 import useBoardStorage from "./useBoardStorage";
 
@@ -20,8 +22,8 @@ export default function App() {
   });
 
   const { board, canUndo, canRedo, editBoard, undo, redo, reset, restoreBoard } = useBoardHistory();
-  const { shapes, strokes } = board;
-  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+  const { shapes, strokes, images } = board;
+  const [selectedObjectId, setSelectedObjectId] = useState<string | null>(null);
 
   const storage = useBoardStorage(board, restoreBoard);
   const { ready, loadError, saving, saveError } = storage;
@@ -36,7 +38,7 @@ export default function App() {
       scaleY: 0.75,
     };
     editBoard((current) => ({ ...current, shapes: [...current.shapes, shape] }));
-    setSelectedShapeId(shape.id);
+    setSelectedObjectId(shape.id);
   }
 
   function updateShape(updatedShape: Shape) {
@@ -55,17 +57,51 @@ export default function App() {
     });
   }
 
+  function addImage(upload: Upload) {
+    const scale = Math.min(1, 180 / Math.max(upload.width, upload.height));
+    const image: PlacedImage = {
+      id: crypto.randomUUID(),
+      uploadId: upload.id,
+      x: 16,
+      y: 24 + (images.length % 5) * 16,
+      width: upload.width * scale,
+      height: upload.height * scale,
+    };
+    editBoard((current) => ({ ...current, images: [...current.images, image] }));
+    setSelectedObjectId(image.id);
+  }
+
+  function moveImage(id: string, x: number, y: number) {
+    editBoard((current) => {
+      const original = current.images.find((image) => image.id === id);
+      if (!original || (original.x === x && original.y === y)) return current;
+
+      return {
+        ...current,
+        images: current.images.map((image) => (image.id === id ? { ...image, x, y } : image)),
+      };
+    });
+  }
+
+  function removeSelectedImage() {
+    editBoard((current) => ({
+      ...current,
+      images: current.images.filter((image) => image.id !== selectedObjectId),
+    }));
+    setSelectedObjectId(null);
+  }
+
   function addStroke(stroke: Stroke) {
     editBoard((current) => ({ ...current, strokes: [...current.strokes, stroke] }));
   }
 
   function deleteSelectedShape() {
-    if (!selectedShapeId) return;
+    if (!selectedObjectId) return;
     editBoard((current) => ({
       ...current,
-      shapes: current.shapes.filter((shape) => shape.id !== selectedShapeId),
+      shapes: current.shapes.filter((shape) => shape.id !== selectedObjectId),
     }));
-    setSelectedShapeId(null);
+    setSelectedObjectId(null);
   }
 
   return (
@@ -94,14 +130,15 @@ export default function App() {
             <ShapesTab
               onAdd={addShape}
               onDelete={deleteSelectedShape}
-              hasSelection={selectedShapeId !== null}
+              hasSelection={shapes.some((shape) => shape.id === selectedObjectId)}
             />
           )}
           {activeTab === "Uploads" && (
-            <>
-              <button className="upload-button" disabled>Upload file</button>
-              <p className="stage-note">Image uploads will be added in a later step.</p>
-            </>
+            <UploadsTab
+              onAdd={addImage}
+              onDelete={removeSelectedImage}
+              hasSelection={images.some((image) => image.id === selectedObjectId)}
+            />
           )}
         </section>
 
@@ -116,10 +153,10 @@ export default function App() {
         </div>
         <div className="board-controls" aria-label="Board controls">
           <button
-            disabled={shapes.length === 0 && strokes.length === 0}
+            disabled={shapes.length === 0 && strokes.length === 0 && images.length === 0}
             onClick={() => {
               reset();
-              setSelectedShapeId(null);
+              setSelectedObjectId(null);
             }}
           >
             Reset
@@ -128,7 +165,7 @@ export default function App() {
             disabled={!canUndo}
             onClick={() => {
               undo();
-              setSelectedShapeId(null);
+              setSelectedObjectId(null);
             }}
           >
             Undo
@@ -137,7 +174,7 @@ export default function App() {
             disabled={!canRedo}
             onClick={() => {
               redo();
-              setSelectedShapeId(null);
+              setSelectedObjectId(null);
             }}
           >
             Redo
@@ -147,12 +184,14 @@ export default function App() {
       <Whiteboard
         enabled={ready}
         settings={drawingSettings}
-        editingShapes={activeTab === "Shapes" || (activeTab === "Drawing" && drawingSettings.tool === "move")}
+        editingObjects={activeTab !== "Drawing" || drawingSettings.tool === "move"}
         shapes={shapes}
         strokes={strokes}
+        images={images}
+        onMoveImage={moveImage}
         onAddStroke={addStroke}
-        selectedShapeId={selectedShapeId}
-        onSelectShape={setSelectedShapeId}
+        selectedObjectId={selectedObjectId}
+        onSelectObject={setSelectedObjectId}
         onChangeShape={updateShape}
       />
     </main>

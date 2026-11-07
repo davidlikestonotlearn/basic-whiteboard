@@ -35,6 +35,16 @@ function isStroke(value: unknown) {
     isNumber(value.thickness) && value.thickness >= 1 && value.thickness <= 32;
 }
 
+function isBoardImage(value: unknown) {
+  return isObject(value) &&
+    typeof value.id === "string" &&
+    typeof value.uploadId === "string" &&
+    /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(value.uploadId) &&
+    isNumber(value.x) && isNumber(value.y) &&
+    isNumber(value.width) && value.width > 0 &&
+    isNumber(value.height) && value.height > 0;
+}
+
 router.get("/", async (_request, response) => {
   response.set("Cache-Control", "no-store").json(await readBoard());
 });
@@ -43,12 +53,13 @@ router.put("/", async (request, response) => {
   const board: unknown = request.body;
   if (!isObject(board) ||
       !Array.isArray(board.shapes) || !board.shapes.every(isShape) ||
-      !Array.isArray(board.strokes) || !board.strokes.every(isStroke)) {
-    response.status(400).json({ error: "The board must contain valid shapes and strokes." });
+      !Array.isArray(board.strokes) || !board.strokes.every(isStroke) ||
+      (board.images !== undefined && (!Array.isArray(board.images) || !board.images.every(isBoardImage)))) {
+    response.status(400).json({ error: "The board must contain valid shapes, strokes, and images." });
     return;
   }
 
-  await writeBoard({ shapes: board.shapes, strokes: board.strokes });
+  await writeBoard({ shapes: board.shapes, strokes: board.strokes, images: board.images ?? [] });
   response.sendStatus(204);
 });
 

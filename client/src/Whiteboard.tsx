@@ -4,6 +4,8 @@ import "konva/lib/shapes/Arrow";
 import "konva/lib/shapes/Circle";
 import "konva/lib/shapes/Line";
 import type { DrawingSettings, Stroke } from "./drawing";
+import BoardImage from "./BoardImage";
+import type { PlacedImage } from "./uploads";
 import BoardShape from "./BoardShape";
 import type { Shape } from "./shapes";
 
@@ -45,24 +47,28 @@ function DrawingMark({ stroke }: { stroke: Stroke }) {
 type WhiteboardProps = {
   enabled: boolean;
   settings: DrawingSettings;
-  editingShapes: boolean;
+  editingObjects: boolean;
   shapes: Shape[];
   strokes: Stroke[];
+  images: PlacedImage[];
+  onMoveImage: (id: string, x: number, y: number) => void;
   onAddStroke: (stroke: Stroke) => void;
-  selectedShapeId: string | null;
-  onSelectShape: (id: string | null) => void;
+  selectedObjectId: string | null;
+  onSelectObject: (id: string | null) => void;
   onChangeShape: (shape: Shape) => void;
 };
 
 export default function Whiteboard({
   enabled,
   settings,
-  editingShapes,
+  editingObjects,
   shapes,
   strokes,
+  images,
+  onMoveImage,
   onAddStroke,
-  selectedShapeId,
-  onSelectShape,
+  selectedObjectId,
+  onSelectObject,
   onChangeShape,
 }: WhiteboardProps) {
   const boardRef = useRef<HTMLElement>(null);
@@ -91,7 +97,7 @@ export default function Whiteboard({
   }
 
   function startDrawing(event: PointerEvent<HTMLElement>) {
-    if (editingShapes || settings.tool === "move" || event.button !== 0 || activePointer.current !== null) return;
+    if (editingObjects || settings.tool === "move" || event.button !== 0 || activePointer.current !== null) return;
 
     const point = getBoardPoint(event);
     activePointer.current = event.pointerId;
@@ -134,7 +140,7 @@ export default function Whiteboard({
       className="whiteboard"
       inert={!enabled}
       aria-label="Whiteboard"
-      data-tool={editingShapes ? "move" : settings.tool}
+      data-tool={editingObjects ? "move" : settings.tool}
       onPointerDown={startDrawing}
       onPointerMove={continueDrawing}
       onPointerUp={finishDrawing}
@@ -145,9 +151,21 @@ export default function Whiteboard({
         width={size.width}
         height={size.height}
         onPointerDown={(event) => {
-          if (editingShapes && event.target === event.target.getStage()) onSelectShape(null);
+          if (editingObjects && event.target === event.target.getStage()) onSelectObject(null);
         }}
       >
+        <Layer listening={editingObjects}>
+          {images.map((image) => (
+            <BoardImage
+              key={image.id}
+              placement={image}
+              canEdit={editingObjects}
+              selected={image.id === selectedObjectId}
+              onSelect={() => onSelectObject(image.id)}
+              onMove={onMoveImage}
+            />
+          ))}
+        </Layer>
         <Layer listening={false}>
           {strokes.map((stroke) => <DrawingMark key={stroke.id} stroke={stroke} />)}
           {draft && <DrawingMark stroke={draft} />}
@@ -157,9 +175,9 @@ export default function Whiteboard({
             <BoardShape
               key={shape.id}
               shape={shape}
-              canEdit={editingShapes}
-              selected={shape.id === selectedShapeId}
-              onSelect={() => onSelectShape(shape.id)}
+              canEdit={editingObjects}
+              selected={shape.id === selectedObjectId}
+              onSelect={() => onSelectObject(shape.id)}
               onChange={onChangeShape}
             />
           ))}

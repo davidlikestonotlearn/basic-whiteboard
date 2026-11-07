@@ -1,4 +1,6 @@
 import express, { type ErrorRequestHandler } from "express";
+import { MulterError } from "multer";
+import uploadRequests from "./requests/uploads.js";
 import boardRequests from "./requests/board.js";
 
 const app = express();
@@ -7,8 +9,21 @@ const port = 3001;
 
 app.use(express.json({ limit: "5mb" }));
 app.use("/api/board", boardRequests);
+app.use("/api/uploads", uploadRequests);
 
 const handleError: ErrorRequestHandler = (error, _request, response, _next) => {
+  if (error instanceof MulterError) {
+    if (error.code === "LIMIT_FILE_SIZE") {
+      response.status(413).json({ error: "Images must be 10 MB or smaller." });
+    } else {
+      response.status(400).json({ error: "Upload one image at a time." });
+    }
+    return;
+  }
+  if (error.status === 404) {
+    response.sendStatus(404);
+    return;
+  }
   if (error.type === "entity.parse.failed") {
     response.status(400).json({ error: "The request must contain valid JSON." });
     return;

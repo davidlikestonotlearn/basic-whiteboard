@@ -1,12 +1,14 @@
 import { database } from "../database/connection.js";
 
-type BoardContents = { shapes: unknown[]; strokes: unknown[] };
+type BoardContents = { shapes: unknown[]; strokes: unknown[]; images: unknown[] };
 
 export async function readBoard(): Promise<BoardContents> {
   const result = await database.query<{ contents: BoardContents }>(
     "SELECT contents FROM board WHERE id = 1"
   );
-  return result.rows[0]?.contents ?? { shapes: [], strokes: [] };
+  const contents = result.rows[0]?.contents;
+  if (!contents) return { shapes: [], strokes: [], images: [] };
+  return { ...contents, images: contents.images ?? [] };
 }
 
 export async function writeBoard(board: BoardContents) {

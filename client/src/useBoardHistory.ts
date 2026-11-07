@@ -2,9 +2,12 @@ import { useCallback, useState } from "react";
 import type { Stroke } from "./drawing";
 import type { Shape } from "./shapes";
 
+import type { PlacedImage } from "./uploads";
+
 export type Board = {
   strokes: Stroke[];
   shapes: Shape[];
+  images: PlacedImage[];
 };
 
 type BoardHistory = {
@@ -13,7 +16,7 @@ type BoardHistory = {
   future: Board[];
 };
 
-const emptyBoard: Board = { strokes: [], shapes: [] };
+const emptyBoard: Board = { strokes: [], shapes: [], images: [] };
 
 export default function useBoardHistory() {
   const [history, setHistory] = useState<BoardHistory>({
@@ -63,7 +66,7 @@ export default function useBoardHistory() {
   }
 
   function reset() {
-    editBoard((board) => (board.shapes.length || board.strokes.length ? emptyBoard : board));
+    editBoard((board) => (board.shapes.length || board.strokes.length || board.images.length ? emptyBoard : board));
   }
 
   return {
