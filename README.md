@@ -2,9 +2,9 @@
 
 A learning project using React and TypeScript, followed by Konva, Express, and PostgreSQL.
 
-## Checkpoint 3: drawing tools
+## Checkpoint 4: shapes
 
-Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Choose Move to drag the blue practice circle. Drawings and the circle position reset when you reload.
+Use Pen, Line, or Arrow to draw. Pick a color and thickness before starting a stroke. Open Shapes and click an outlined shape to add it. Select or drag a shape on the board, resize it with the corner handles, or use Delete selected shape in the sidebar. The Drawing tab also has a Move tool for selecting and editing shapes. The board resets when you reload.
 
 ## Run locally
 
@@ -31,7 +31,7 @@ The stylesheet requests Canva Sans. A licensed webfont file has not been supplie
 
 ## Planned checkpoints
 
-- Shape editing and undo/redo/reset
+- Undo, redo, and reset
 - Express backend
 - PostgreSQL board saving
 - Persistent image uploads

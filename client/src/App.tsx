@@ -2,6 +2,8 @@ import { useState } from "react";
 import DrawingTab from "./DrawingTab";
 import type { DrawingSettings } from "./drawing";
 import Whiteboard from "./Whiteboard";
+import ShapesTab from "./ShapesTab";
+import type { Shape, ShapeKind } from "./shapes";
 
 type Tab = "Drawing" | "Shapes" | "Uploads";
 const tabs: Tab[] = ["Drawing", "Shapes", "Uploads"];
@@ -14,6 +16,34 @@ export default function App() {
     color: "#111111",
     thickness: 4,
   });
+
+  const [shapes, setShapes] = useState<Shape[]>([]);
+  const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+
+  function addShape(kind: ShapeKind) {
+    const offset = (shapes.length % 5) * 12;
+    const shape: Shape = {
+      id: crypto.randomUUID(),
+      kind,
+      x: 12,
+      y: 24 + offset,
+      scaleX: 0.75,
+      scaleY: 0.75,
+    };
+    setShapes((previous) => [...previous, shape]);
+    setSelectedShapeId(shape.id);
+  }
+
+  function updateShape(updatedShape: Shape) {
+    setShapes((previous) =>
+      previous.map((shape) => (shape.id === updatedShape.id ? updatedShape : shape))
+    );
+  }
+
+  function deleteSelectedShape() {
+    setShapes((previous) => previous.filter((shape) => shape.id !== selectedShapeId));
+    setSelectedShapeId(null);
+  }
 
   return (
     <main className="app">
@@ -38,11 +68,11 @@ export default function App() {
             <DrawingTab settings={drawingSettings} onChange={setDrawingSettings} />
           )}
           {activeTab === "Shapes" && (
-            <div className="shape-previews" aria-label="Shape previews">
-              <div className="rectangle" title="Rectangle" />
-              <div className="circle" title="Circle" />
-              <div className="triangle" title="Triangle" />
-            </div>
+            <ShapesTab
+              onAdd={addShape}
+              onDelete={deleteSelectedShape}
+              hasSelection={selectedShapeId !== null}
+            />
           )}
           {activeTab === "Uploads" && (
             <>
@@ -58,7 +88,14 @@ export default function App() {
           <button disabled>Redo</button>
         </div>
       </aside>
-      <Whiteboard settings={drawingSettings} />
+      <Whiteboard
+        settings={drawingSettings}
+        editingShapes={activeTab === "Shapes" || (activeTab === "Drawing" && drawingSettings.tool === "move")}
+        shapes={shapes}
+        selectedShapeId={selectedShapeId}
+        onSelectShape={setSelectedShapeId}
+        onChangeShape={updateShape}
+      />
     </main>
   );
 }

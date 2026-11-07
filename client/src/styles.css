@@ -31,10 +31,19 @@ button:focus-visible { outline: 3px solid #315b7b; outline-offset: 3px; }
 .drawing-tools button { padding: 5px 8px; border: 1px solid #315b7b; background: white; cursor: pointer; }
 .drawing-tools button[aria-pressed="true"] { background: #315b7b; color: white; }
 .color-preview { width: 175px; height: 175px; border-radius: 50%; margin: 24px auto; background: #c8d2db; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; cursor: pointer; }
-.shape-previews { display: grid; grid-template-columns: 1fr 1fr; align-items: start; gap: 24px; }
-.rectangle { height: 95px; background: #d9d9d9; }
-.circle { aspect-ratio: 1; border-radius: 50%; background: #d9d9d9; }
-.triangle { height: 130px; background: #d9d9d9; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.shape-previews { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.shape-previews button {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  background: #b8ddfa;
+  border: 1px solid #315b7b;
+  cursor: pointer;
+}
+.shape-previews button:hover { background: #d7ecfc; }
+.shape-previews svg { width: 64px; max-width: 100%; fill: none; stroke: #315b7b; stroke-width: 3; }
+.delete-shape { margin-top: 16px; padding: 8px 12px; }
 .upload-button { width: 100%; padding: 20px; background: #b8ddfa; border: 1px solid #111; font-weight: 700; text-transform: uppercase; }
 .stage-note { font-size: 14px; line-height: 1.5; }
 .board-controls { display: flex; justify-content: flex-end; gap: 6px; padding: 16px; }

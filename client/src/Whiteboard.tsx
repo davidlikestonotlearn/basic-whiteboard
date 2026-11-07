@@ -4,6 +4,8 @@ import "konva/lib/shapes/Arrow";
 import "konva/lib/shapes/Circle";
 import "konva/lib/shapes/Line";
 import type { DrawingSettings, Stroke } from "./drawing";
+import BoardShape from "./BoardShape";
+import type { Shape } from "./shapes";
 
 function getBoardPoint(event: PointerEvent<HTMLElement>): [number, number] {
   const board = event.currentTarget.getBoundingClientRect();
@@ -40,15 +42,29 @@ function DrawingMark({ stroke }: { stroke: Stroke }) {
   return <Line {...lineProps} />;
 }
 
-export default function Whiteboard({ settings }: { settings: DrawingSettings }) {
+type WhiteboardProps = {
+  settings: DrawingSettings;
+  editingShapes: boolean;
+  shapes: Shape[];
+  selectedShapeId: string | null;
+  onSelectShape: (id: string | null) => void;
+  onChangeShape: (shape: Shape) => void;
+};
+
+export default function Whiteboard({
+  settings,
+  editingShapes,
+  shapes,
+  selectedShapeId,
+  onSelectShape,
+  onChangeShape,
+}: WhiteboardProps) {
   const boardRef = useRef<HTMLElement>(null);
   const activePointer = useRef<number | null>(null);
   const draftRef = useRef<Stroke | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
-  const [circle, setCircle] = useState({ x: 100, y: 100 });
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [draft, setDraft] = useState<Stroke | null>(null);
-  const canMove = settings.tool === "move";
 
   useEffect(() => {
     const board = boardRef.current;
@@ -70,7 +86,7 @@ export default function Whiteboard({ settings }: { settings: DrawingSettings }) 
   }
 
   function startDrawing(event: PointerEvent<HTMLElement>) {
-    if (settings.tool === "move" || event.button !== 0 || activePointer.current !== null) return;
+    if (editingShapes || settings.tool === "move" || event.button !== 0 || activePointer.current !== null) return;
 
     const point = getBoardPoint(event);
     activePointer.current = event.pointerId;
@@ -112,29 +128,35 @@ export default function Whiteboard({ settings }: { settings: DrawingSettings }) 
       ref={boardRef}
       className="whiteboard"
       aria-label="Whiteboard"
-      data-tool={settings.tool}
+      data-tool={editingShapes ? "move" : settings.tool}
       onPointerDown={startDrawing}
       onPointerMove={continueDrawing}
       onPointerUp={finishDrawing}
       onPointerCancel={cancelDrawing}
       onLostPointerCapture={cancelDrawing}
     >
-      <Stage width={size.width} height={size.height}>
-        <Layer>
-          <Circle
-            x={circle.x}
-            y={circle.y}
-            radius={36}
-            fill="#b8ddfa"
-            stroke="#315b7b"
-            strokeWidth={2}
-            draggable={canMove}
-            onDragEnd={(event) => setCircle({ x: event.target.x(), y: event.target.y() })}
-          />
-        </Layer>
+      <Stage
+        width={size.width}
+        height={size.height}
+        onPointerDown={(event) => {
+          if (editingShapes && event.target === event.target.getStage()) onSelectShape(null);
+        }}
+      >
         <Layer listening={false}>
           {strokes.map((stroke) => <DrawingMark key={stroke.id} stroke={stroke} />)}
           {draft && <DrawingMark stroke={draft} />}
+        </Layer>
+        <Layer>
+          {shapes.map((shape) => (
+            <BoardShape
+              key={shape.id}
+              shape={shape}
+              canEdit={editingShapes}
+              selected={shape.id === selectedShapeId}
+              onSelect={() => onSelectShape(shape.id)}
+              onChange={onChangeShape}
+            />
+          ))}
         </Layer>
       </Stage>
     </section>
